@@ -1,0 +1,117 @@
+import numpy as np
+import pandas as pd
+
+# print(pd.date_range("2026-01-01", periods = 4, freq = "ME")) # конец месяца
+#
+# print(pd.date_range("2026-01-01", periods = 4, freq = "MS")) # начало месяца
+#
+# print(pd.date_range("2026-01-01", periods = 4, freq = "QE"))  # конец квартала
+#
+# print(pd.date_range("2026-01-01", periods = 4, freq = "QS"))  # начало квартала
+#
+# print(pd.date_range("2026-01-01", periods = 4, freq = "W"))
+#
+# # print(pd.date_range("2026-01-01", periods = 4, freq = "W-MON")) # неделя начинающаяся с понедельника
+# #
+# # print(pd.date_range("2026-01-01", periods = 4, freq = "4W-MON")) # 4 неделя начинающаяся с понедельника
+#
+# ind = pd.read_csv('index.csv', sep = ';', parse_dates = ["Date"])
+#
+# print(ind.head())
+#
+# print(type(ind))
+# print(ind.dtypes)
+#
+# index = pd.DatetimeIndex(ind["Date"])
+#
+# ind.index = index
+# ind = ind["Close"]
+# print(ind.head())
+#
+# import matplotlib.pyplot as plt
+#
+# ind.plot()
+# plt.show()
+
+df = pd.read_csv('FremontBridge.csv', index_col = "Date", parse_dates = True, date_format = "%m/%d/%Y %I:%M:%S %p")
+print(df.head())
+print(df.dtypes)
+
+print(df.columns)
+df.columns = ["Total", "East", "West"]
+print(df.head())
+
+print(df.describe())
+print(df.dropna().describe())
+
+import matplotlib.pyplot as plt
+
+# df.plot()
+# plt.ylabel("кол-во велосипедистов в час")
+# plt.show()
+
+# weekly = df.resample("W").sum()
+# weekly.plot(style = ["-", ":", "--"])
+# plt.ylabel("кол-во велосипедистов по неделям")
+# plt.show()
+
+# daily = df.resample('D').sum()
+# # center = False => прошлые значнеия от выбранного
+# # center = True => прошлые и будущие (пополам) значнеия от выбранного
+# daily.rolling(30, center = True).mean().plot(style = ["-", ":", "--"])
+# plt.ylabel("среднее месячное велосипедистов (скользящее окно)")
+# plt.show()
+
+# daily = df.resample('D').sum()
+# # center = False => прошлые значнеия от выбранного
+# # center = True => прошлые и будущие (пополам) значнеия от выбранного
+# daily.rolling(30, center = True, win_type="gaussian").mean(std = 5).plot(style = ["-", ":", "--"])
+# plt.ylabel("среднее месячное велосипедистов (скользящее окно)")
+# plt.show()
+
+# timely = df.groupby(df.index.time).mean()
+# ticks = 60 * 60 * 4 * np.arange(6)
+# print(ticks)
+# timely.plot(xticks = ticks)
+# plt.show()
+
+# weekly = df.groupby(df.index.dayofweek).mean()
+# weekly.plot()
+# plt.show()
+
+w1 = np.where(df.index.weekday < 5, "Будни", "Выходные")
+t1 = df.groupby([w1, df.index.time]).mean()
+fig, ax = plt.subplots(1, 2)
+ax[0].set_ylim(0, 600)
+t1.loc["Будни"].plot(ax = ax[0], title = "Будни")
+ax[1].set_ylim(0, 600)
+t1.loc["Выходные"].plot(ax = ax[1], title = "Выходные")
+
+# plt.show()
+
+fig.savefig("rrr.png")
+
+from IPython.display import Image
+
+Image("rrr.png")
+
+print(fig.canvas.get_supported_filetypes())
+
+# timely = df.groupby(df.index.time).mean()
+# ticks = 60 * 60 * 4 * np.arange(6)
+# print(ticks)
+# timely.plot(xticks = ticks)
+# plt.show()
+
+
+# MATPLOTLIB
+
+# pip install matplotlib
+# pip install pyqt5
+
+import matplotlib.pyplot as plt
+
+plt.style.use('classic')
+
+# plt.show() # ! может быть только один
+
