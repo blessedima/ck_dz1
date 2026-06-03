@@ -1,1 +1,219 @@
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from scipy.stats import alpha
 
+iris = sns.load_dataset('iris')
+
+from sklearn.decomposition import PCA
+
+iris_two = iris[iris['species'].isin(['setosa', 'versicolor'])]
+X = iris_two.drop('species', axis=1)
+y = iris_two['species']
+
+model = PCA()
+X_pca = model.fit_transform(X)
+
+plt.figure(figsize=(8, 6))
+for target, color in zip(['setosa', 'versicolor'], ['red', 'green']):
+    mask = y == target
+    plt.scatter(X_pca[mask, 0], X_pca[mask, 1], c=color, label=target, alpha=0.7, edgecolor='k')
+plt.xlabel('первая главная компонента')
+plt.ylabel('вторая главная компонента')
+plt.title('PCA двух сортов ириса')
+plt.legend()
+plt.grid(True)
+# # plt.show()
+
+from sklearn.ensemble import RandomForestClassifier
+
+X_rf = iris_two.iloc[:, 0:2].to_numpy()
+y_rf = iris_two['species']
+
+model = RandomForestClassifier()
+model.fit(X_rf, y_rf)
+
+xx, yy = np.meshgrid(
+    np.linspace(X_rf[:, 0].min() - 0.5, X_rf[:, 0].max() + 0.5, 200),
+    np.linspace(X_rf[:, 1].min() - 0.5, X_rf[:, 1].max() + 0.5, 200)
+)
+
+Z = model.predict(np.c_[xx.ravel(), yy.ravel()])
+Z = (Z == 'versicolor').astype(int)
+Z = Z.reshape(xx.shape)
+
+plt.figure(figsize=(8, 6))
+plt.contourf(xx, yy, Z, alpha=0.3, levels=[-0.5, 0.5, 1.5], colors=['red', 'green'])
+setosa_mask = y_rf == 'setosa'
+versicolor_mask = y_rf == 'versicolor'
+
+plt.scatter(X_rf[setosa_mask, 0], X_rf[setosa_mask, 1], color='red', label='setosa', alpha=0.7, edgecolor='k')
+
+plt.scatter(X_rf[versicolor_mask, 0], X_rf[versicolor_mask, 1], color='green', label='versicolor', alpha=0.7, edgecolor='k')
+
+plt.xlabel('sepal length')
+plt.ylabel('sepal width')
+plt.title('RandomForestClassifier разделение setosa и versicolor')
+plt.legend()
+# # plt.show()
+
+from sklearn.cluster import KMeans
+
+X_kmeans = iris_two.iloc[:, 0:2].to_numpy()
+true_labels = iris_two['species']
+
+model = KMeans()
+model.fit(X_kmeans)
+predicted_clusters = model.predict(X_kmeans)
+
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+plt.scatter(X_kmeans[:, 0], X_kmeans[:, 1], c=predicted_clusters, cmap='coolwarm', alpha=0.7, edgecolor='k')
+plt.scatter(model.cluster_centers_[:, 0], model.cluster_centers_[:, 1], marker='X', s=200, c='black', label='центры кластеров')
+plt.xlabel('sepal length')
+plt.ylabel('sepal width')
+plt.title('KMeans предсказанные кластеры')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(1, 2, 2)
+for target, color in zip(['setosa', 'versicolor'], ['red', 'green']):
+    mask = true_labels == target
+    plt.scatter(X_kmeans[mask, 0], X_kmeans[mask, 1], c=color, label=target, alpha=0.7, edgecolor='k')
+plt.xlabel('sepal length')
+plt.ylabel('sepal width')
+plt.title('истинные сорта (для сравнения)')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.show()
+
+# matplotlib
+
+X = (iris.drop('species', axis=1).values)
+feature_names = iris.columns[:-1].tolist()
+
+species_unique = iris['species'].unique()
+target_names = species_unique.tolist()
+species_to_int = {name: i for i, name in enumerate(species_unique)}
+y = iris['species'].map(species_to_int).values
+
+plt.figure(figsize=(8, 5))
+
+x1 = np.array([1, 2, 5, 10, 15, 20])
+y1 = np.array([1, 4, 7, 3, 5, 11])
+
+x2 = np.array([1, 6, 10, 14, 20])
+y2 = np.array([4, 3, 1, 8, 12])
+
+plt.plot(x1, y1, color='red', marker='o', linestyle='-', label='line 1')
+plt.plot(x2, y2, color='green', marker='o', linestyle='-.', label='line 2')
+
+plt.legend()
+plt.xlim(0.5, 20.5)
+plt.ylim(0, 12.5)
+plt.grid(True)
+
+fig = plt.figure(figsize=(10, 8))
+gs = fig.add_gridspec(2, 2)
+
+ax1 = fig.add_subplot(gs[0, :])
+x_top = np.linspace(1, 5, 10)
+y_top = np.array([1, 3, 6.8, 6.2, 5.5, 4.5, 3, 3.5, 4.5, 5])
+ax1.plot(x_top, y_top)
+
+ax2 = fig.add_subplot(gs[1, 0])
+x_bottom_left = np.linspace(1, 5, 10)
+y_bottom_left = np.array([8.5, 4, 2, 2.5, 4, 6, 8, 8.5, 8.2, 8.5])
+ax2.plot(x_bottom_left, y_bottom_left)
+
+ax3 = fig.add_subplot(gs[1, 1])
+x_bottom_right = np.linspace(1, 5, 10)
+y_bottom_right = np.array([-7, -4, 0, 2, 0, -4, -7, -6.5, -6.8, -7])
+ax3.plot(x_bottom_right, y_bottom_right)
+
+plt.tight_layout()
+
+plt.figure(figsize=(7, 6))
+x_parabola = np.linspace(-5, 5, 100)
+y_parabola = x_parabola**2
+plt.plot(x_parabola, y_parabola)
+plt.annotate('min', xy=(0, 0), xytext=(0.5, 10), arrowprops=dict(facecolor='green', shrink=0.05, width=3, headwidth=10), fontsize=14, color='green', horizontalalignment='center', verticalalignment='bottom')
+plt.ylim(-1, 26)
+
+plt.figure(figsize=(8, 7))
+data_heatmap = np.random.randint(0, 11, size=(7, 7))
+plt.imshow(data_heatmap, cmap='viridis', origin='lower')
+plt.colorbar()
+plt.xticks(np.arange(7))
+plt.yticks(np.arange(7))
+
+plt.figure(figsize=(8, 5))
+x_sin = np.linspace(0, 5 * np.pi, 500)
+y_sin = np.cos(x_sin)
+plt.fill_between(x_sin, y_sin, 0, where=(y_sin > 0), interpolate=True, color = 'blue')
+plt.fill_between(x_sin, y_sin, 0, where=(y_sin < 0), interpolate=True, color = 'blue')
+plt.plot(x_sin, y_sin, color='red', linewidth=3)
+plt.ylim(-1.05, 1.05)
+plt.xlim(0, 5)
+plt.grid(True)
+
+plt.figure(figsize=(8, 5))
+x_sin_gaps = np.linspace(0, 5 * np.pi, 500)
+y_sin_gaps = np.cos(x_sin_gaps)
+y_sin_gaps[(y_sin_gaps > -0.5) & (y_sin_gaps < 0.5)] = np.nan
+plt.plot(x_sin_gaps, y_sin_gaps, linewidth=2.5)
+plt.ylim(-1.05, 1.05)
+plt.xlim(0, 15)
+plt.grid(True)
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+x_step = np.arange(7)
+y_step = np.array([0, 1, 2, 3, 4, 5, 6])
+axes[0].step(x_step, y_step, where='pre', color='green', marker='o')
+axes[0].set_xticks(x_step)
+axes[0].set_yticks(y_step)
+axes[0].grid(True)
+axes[1].step(x_step, y_step, where='mid', color='green', marker='o')
+axes[1].set_xticks(x_step)
+axes[1].set_yticks(y_step)
+axes[1].grid(True)
+axes[2].step(x_step, y_step, where='post', color='green', marker='o')
+axes[2].set_xticks(x_step)
+axes[2].set_yticks(y_step)
+axes[2].grid(True)
+plt.tight_layout()
+
+plt.figure(figsize=(9, 6))
+x_stack = np.linspace(0, 10, 100)
+y_base = -0.5 * (x_stack - 5)**2 + 12.5
+y1_actual = y_base * 0.2
+y2_actual = y_base * 0.3
+y3_actual = y_base * 0.5
+y1_actual[y1_actual < 0] = 0
+y2_actual[y2_actual < 0] = 0
+y3_actual[y3_actual < 0] = 0
+plt.stackplot(x_stack, y1_actual, y2_actual, y3_actual, labels=['y1', 'y2', 'y3'])
+plt.legend(loc='upper left')
+plt.ylim(0, 28)
+plt.grid(True)
+
+plt.figure(figsize=(7, 7))
+car_brands = ['Toyota', 'Ford', 'Jaguar', 'AUDI', 'BMV']
+sales_data = [15, 25, 30, 20, 35]
+bmv_index = car_brands.index('BMV')
+explode_car = [0] * len(car_brands)
+explode_car[bmv_index] = 0.1
+plt.pie(sales_data, labels=car_brands, explode=explode_car, autopct='%1.1f%%', startangle=140)
+plt.axis('equal')
+
+plt.figure(figsize=(7, 7))
+wedges, texts, autotexts = plt.pie(sales_data, labels=car_brands, autopct='%1.1f%%', startangle=140, pctdistance=0.85, wedgeprops=dict(width=0.3, edgecolor='w'))
+centre_circle = plt.Circle((0,0), 0.70, fc='white')
+fig = plt.gcf()
+fig.gca().add_artist(centre_circle)
+plt.axis('equal')
+plt.show()
